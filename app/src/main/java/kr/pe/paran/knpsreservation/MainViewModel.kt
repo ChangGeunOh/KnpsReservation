@@ -60,7 +60,7 @@ class MainViewModel : ViewModel() {
                 it.day == _favoriteShelter.day && it.shelter == _favoriteShelter.shelter
             }?.let {
                 searchResultList.add(it)
-                if (searchResultList.size > 10) searchResultList.removeRange(10, searchResultList.size - 1)
+                if (searchResultList.size > 10) searchResultList.removeRange(0, searchResultList.size - 12)
                 _availableReservation.value = it.availableReservation()
             }
         }

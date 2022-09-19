@@ -32,7 +32,7 @@ data class ReservationData(
 
     fun getRegDate(): String {
         return SimpleDateFormat(
-            "yyyy.MM.dd hh:mm",
+            "yyyy.MM.dd HH:mm",
             Locale.getDefault()
         ).format(regDate)
     }
