@@ -1,4 +1,4 @@
-package kr.pe.paran.knpsreservation.ui.theme.screen
+package kr.pe.paran.knpsreservation.screen
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
@@ -20,20 +20,21 @@ import kr.pe.paran.knpsreservation.component.GenieDatePicker
 import kr.pe.paran.knpsreservation.component.GenieDropDownMenu
 import kr.pe.paran.knpsreservation.component.GenieOutlinedTextField
 import kr.pe.paran.knpsreservation.component.GenieRoundedButton
+import kr.pe.paran.knpsreservation.model.SettingData
 import kr.pe.paran.knpsreservation.model.Shelter
 
 @Composable
-fun SettingDialog(viewModel: MainViewModel, onDismiss: () -> Unit) {
+fun SettingDialog(
+    settingData: SettingData,
+    onChangeData: (SettingData) -> Unit,
+    validDataList: List<String> = emptyList<String>(),
+    onSaveData: (SettingData) -> Unit,
+    onDismiss: () -> Unit,
+) {
 
     val context = LocalContext.current
-
     var isShowDatePicker by remember { mutableStateOf(false) }
-    var reservationData by remember { mutableStateOf(viewModel.favoriteShelter) }
-    var phoneNumber by remember { mutableStateOf(viewModel.phoneNumber.value) }
-    val dateList by viewModel.days.collectAsState()
-
     val itemList = Shelter.values().map { it.value }.dropLast(1)
-
 
     Dialog(
         onDismissRequest = { onDismiss() },
@@ -48,14 +49,15 @@ fun SettingDialog(viewModel: MainViewModel, onDismiss: () -> Unit) {
                 GenieDropDownMenu(
                     label = "대피소",
                     items = itemList,
-                    text = if(reservationData.shelter != Shelter.NONE) reservationData.shelter.value else "",
+                    text = if (settingData.shelter != Shelter.NONE) settingData.shelter.value else "",
                     onValueChange = {
-                        reservationData = reservationData.copy(shelter = Shelter.fromValue(it))
+                        onChangeData(settingData.copy(shelter = Shelter.fromValue(it)))
+
                     }
                 )
                 GenieOutlinedTextField(
                     label = "예약날짜",
-                    text = reservationData.commaDay(),
+                    text = settingData.date,
                     enabled = true,
                     trailingIcon = {
                         IconButton(
@@ -72,24 +74,23 @@ fun SettingDialog(viewModel: MainViewModel, onDismiss: () -> Unit) {
                 )
                 GenieOutlinedTextField(
                     label = "연락번호",
-                    text = phoneNumber,
+                    text = settingData.phoneNumber,
                     enabled = true,
-                    onValueChange = { phoneNumber = it },
+                    onValueChange = { onChangeData(settingData.copy(phoneNumber = it)) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
                 GenieRoundedButton(text = "설정하기") {
-                    if (dateList.isNotEmpty() && !dateList.contains(
-                            reservationData.day.replace(".", "")
+                    if (validDataList.isNotEmpty() && !validDataList.contains(
+                            settingData.date.replace(".", "")
                         )
                     ) {
                         Toast.makeText(context, "예약 가능한 날짜가 아닙니다.", Toast.LENGTH_SHORT).show()
-                    } else if (reservationData.shelter == Shelter.NONE) {
+                    } else if (settingData.shelter == Shelter.NONE) {
                         Toast.makeText(context, "예약할 대피소를 선택하세요.", Toast.LENGTH_SHORT).show()
                     } else {
-                        viewModel.setFavoriteShelter(reservationData = reservationData)
-                        viewModel.setPhoneNumber(phoneNumber)
+                        onSaveData(settingData)
                         onDismiss()
                     }
                 }
@@ -101,8 +102,7 @@ fun SettingDialog(viewModel: MainViewModel, onDismiss: () -> Unit) {
         GenieDatePicker(
             onDismiss = {
                 it?.let {
-                    reservationData.setDate(it.replace(".", ""))
-                    reservationData = reservationData.copy()
+                    onChangeData(settingData.copy(date = it))
                 }
                 isShowDatePicker = false
             }

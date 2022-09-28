@@ -1,5 +1,6 @@
-package kr.pe.paran.knpsreservation.ui.theme.screen
+package kr.pe.paran.knpsreservation.screen
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -17,7 +18,7 @@ import kr.pe.paran.knpsreservation.model.ReservationData
 
 @Composable
 fun MainContent(resultList: List<ReservationData>) {
-
+    Log.i(":::::", resultList.toString())
     val lazyListState = rememberLazyListState(
         initialFirstVisibleItemIndex = 0,
         initialFirstVisibleItemScrollOffset = 0

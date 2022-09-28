@@ -1,4 +1,4 @@
-package kr.pe.paran.knpsreservation.ui.theme.screen
+package kr.pe.paran.knpsreservation.screen
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.Icon

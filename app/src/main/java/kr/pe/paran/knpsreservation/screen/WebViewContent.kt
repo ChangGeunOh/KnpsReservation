@@ -1,4 +1,4 @@
-package kr.pe.paran.knpsreservation.ui.theme.screen
+package kr.pe.paran.knpsreservation.screen
 
 import android.util.Log
 import android.webkit.JavascriptInterface
@@ -28,11 +28,13 @@ import java.util.*
 @Composable
 fun WebViewContent(
     onDone: (MutableList<ReservationData>, List<String>) -> Unit,
-    viewModel: MainViewModel
+    isRunning: Boolean,
+    phoneNumber: String,
 ) {
-    val isRunning by viewModel.isRunning.collectAsState()
     var webView by remember { mutableStateOf<WebView?>(null) }
-    val phoneNumber by viewModel.phoneNumber.collectAsState()
+
+    Log.i(":::::", "isRunning>$isRunning")
+    Log.i(":::::", "phoneNumber>$phoneNumber")
 
     // Keep Screen ON
     val currentView = LocalView.current

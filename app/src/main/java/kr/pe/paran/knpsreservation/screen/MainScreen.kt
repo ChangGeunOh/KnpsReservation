@@ -1,13 +1,12 @@
-package kr.pe.paran.knpsreservation.ui.theme.screen
+package kr.pe.paran.knpsreservation.screen
 
 import android.annotation.SuppressLint
-import android.app.AlarmManager
-import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
 import android.telephony.SmsManager
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,7 +21,6 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberPermissionState
 import kr.pe.paran.knpsreservation.MainViewModel
-import java.util.*
 
 @OptIn(ExperimentalPermissionsApi::class)
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter", "PermissionLaunchedDuringComposition")
@@ -34,17 +32,18 @@ fun MainScreen(viewModel: MainViewModel) {
     val title by remember { mutableStateOf("국립공원 대피소 예약") }
     var isShowTune by remember { mutableStateOf(false) }
     val isRunning by viewModel.isRunning.collectAsState()
-    val availableReservation by viewModel.availableReservation.collectAsState()
-    val phoneNumber by viewModel.phoneNumber.collectAsState()
 
-    val cameraPermissionState = rememberPermissionState(
+    val availableReservation by viewModel.availableReservation.collectAsState()
+    val dateList by viewModel.days.collectAsState()
+    val settingData by viewModel.settingData.collectAsState()
+    val smsPermissionState = rememberPermissionState(
         android.Manifest.permission.SEND_SMS
     )
 
-    if (availableReservation != null && phoneNumber.isNotEmpty()) {
+    if (availableReservation != null && settingData.phoneNumber.isNotEmpty()) {
         val smsManager: SmsManager = context.getSystemService(SmsManager::class.java)
         smsManager.sendTextMessage(
-            phoneNumber,
+            settingData.phoneNumber,
             null,
             availableReservation!!.getMessage(),
             null,
@@ -53,6 +52,10 @@ fun MainScreen(viewModel: MainViewModel) {
     }
 
     val resultList = viewModel.searchResultList
+
+    LaunchedEffect(key1 = Unit, block = {
+        viewModel.getSettingData()
+    })
 
     Scaffold(
         modifier = Modifier
@@ -66,9 +69,9 @@ fun MainScreen(viewModel: MainViewModel) {
             )
         }
     ) {
-        when (cameraPermissionState.status) {
+        when (smsPermissionState.status) {
             is PermissionStatus.Denied -> {
-                cameraPermissionState.launchPermissionRequest()
+                smsPermissionState.launchPermissionRequest()
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
@@ -85,10 +88,13 @@ fun MainScreen(viewModel: MainViewModel) {
                 Column(modifier = Modifier.fillMaxSize()) {
                     WebViewContent(
                         onDone = { it, dayList ->
-                            viewModel.setReservationList(it)
                             viewModel.setDays(days = dayList)
+                            if (isRunning) {
+                                viewModel.setReservationList(it)
+                            }
                         },
-                        viewModel = viewModel
+                        isRunning = isRunning,
+                        phoneNumber = settingData.phoneNumber
                     )
                     MainContent(resultList = resultList)
                 }
@@ -97,9 +103,19 @@ fun MainScreen(viewModel: MainViewModel) {
     }
 
     if (isShowTune) {
-        SettingDialog(viewModel = viewModel) {
-            isShowTune = false
-        }
+        SettingDialog(
+            settingData = settingData,
+            onChangeData = {
+                viewModel.setSettingData(settingData = it)
+            },
+            validDataList = dateList,
+            onSaveData = {
+                viewModel.saveSettingData(it)
+            },
+            onDismiss = {
+                isShowTune = false
+            }
+        )
     }
 }
 

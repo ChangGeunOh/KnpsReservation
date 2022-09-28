@@ -8,7 +8,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import kr.pe.paran.knpsreservation.ui.theme.KnpsReservationTheme
-import kr.pe.paran.knpsreservation.ui.theme.screen.MainScreen
+import kr.pe.paran.knpsreservation.screen.MainScreen
 import java.util.*
 
 
